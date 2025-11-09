@@ -1,7 +1,11 @@
 import os.path
 import time
 import cv2
+import redis
+
 from server.core.config import config
+from server.service import telegram_service
+
 
 def release_camera(cam: cv2.VideoCapture):
     cam.release()
@@ -17,8 +21,12 @@ def take_picture() -> str | None:
         if ret:
             path = os.path.join(config.IMAGE_FOLDER_PATH, f"{time.time()}.jpg")
             cv2.imwrite(path, frame)
-
             release_camera(cam)
+
+            # call telegram api to send back message
+            with open(path, "rb") as f:
+                telegram_service.send_photo_message(f, 'Đây là ảnh chụp từ webcam')
+
             return path
 
     release_camera(cam)
@@ -56,7 +64,28 @@ def take_video() -> str | None:
 
         out.release()
         release_camera(cam)
+
+        # call telegram api to send back message
+        with open(path, "rb") as f:
+            telegram_service.send_video_message(f, 'Đây là video từ webcam')
+
         return path
 
     release_camera(cam)
     return None
+
+def listen_redis_command():
+    r = redis.Redis(host=config.REDIS_HOST, port=config.REDIS_PORT, decode_responses=True)
+    pubsub = r.pubsub()
+    pubsub.subscribe(config.REDIS_SUBSCRIBE_CHANNEL)
+
+    print('Listening redis command...')
+    for message in pubsub.listen():
+        if message['type'] == 'message':
+            print(message)
+            if message['data'] == 'take_picture':
+                take_picture()
+            elif message['data'] == 'take_video':
+                take_video()
+
+    print('Stop listening redis command...')

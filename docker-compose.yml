@@ -1,22 +1,17 @@
 version: '3.0'
 
 services:
-  redis:
-    image: 'redis:alpine'
-    container_name: 'redis-chat-bot'
-    networks:
-      - chat-bot-network
-  telegram-hook:
-    depends_on:
-      - redis
-    image: 'nguyentrminh/os-skkhkt:v0.0.1'
-    container_name: 'telegram-hook'
+  robot-support-utils:
+    image: 'nguyentrminh/robot-support-utils:v0.0.1'
+    container_name: 'robot-support-utils'
     env_file:
-      - server/.env
+      - .env
     networks:
       - chat-bot-network
+    devices:
+      - "/dev/video0:/dev/video0"
     ports:
-      - "8083:8082"
+      - "8084:8084"
 
 networks:
   chat-bot-network:
