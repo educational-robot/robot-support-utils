@@ -127,15 +127,15 @@ def record_video_pi(duration=5):
     if camera_running:
         stop_camera()  # giải phóng camera
 
-    output_path = os.path.join(config.IMAGE_FOLDER_PATH, f"{time.time()}.mp4")
+    output_path = os.path.join(config.IMAGE_FOLDER_PATH, f"{time.time()}.h264")
     print(f"Recording video to {output_path} for {duration}s...")
 
     try:
         result = subprocess.run(
-            ["rpicam-video", "-o", output_path, "-t", str(duration*1000)],
+            ["rpicam-vid", "-o", output_path, "-t", str(duration*1000)],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            timeout=duration+5
+            timeout=duration
         )
         if result.returncode != 0:
             print("Recording failed:", result.stderr.decode())
