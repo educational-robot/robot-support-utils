@@ -121,6 +121,35 @@ def take_photo_pi():
 
     return output_path
 
+def record_video_pi(duration=5):
+    global camera_running
+
+    if camera_running:
+        stop_camera()  # giải phóng camera
+
+    output_path = os.path.join(config.IMAGE_FOLDER_PATH, f"{time.time()}.mp4")
+    print(f"Recording video to {output_path} for {duration}s...")
+
+    try:
+        result = subprocess.run(
+            ["rpicam-video", "-o", output_path, "-t", str(duration*1000)],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=duration+5
+        )
+        if result.returncode != 0:
+            print("Recording failed:", result.stderr.decode())
+            return None
+    except subprocess.TimeoutExpired:
+        print("Recording finished")
+
+    print("Video saved:", output_path)
+    # nếu muốn gửi Telegram
+    with open(output_path, "rb") as f:
+        telegram_service.send_video_message(f, 'Đây là video từ webcam')
+
+    return output_path
+
 def take_video() -> str | None:
     print('taking video...')
     cam = cv2.VideoCapture(0)
@@ -179,6 +208,7 @@ def listen_redis_command():
                 # take_picture()
                 take_photo_pi()
             elif message['data'] == 'take_video':
-                take_video()
+                # take_video()
+                record_video_pi(config.VIDEO_DURATION)
 
     print('Stop listening redis command...')
