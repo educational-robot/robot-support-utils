@@ -115,6 +115,9 @@ def take_photo_pi():
         return None
 
     print("Photo saved:", output_path)
+    # call telegram api to send back message
+    with open(output_path, "rb") as f:
+        telegram_service.send_photo_message(f, 'Đây là ảnh chụp từ webcam')
 
     return output_path
 
