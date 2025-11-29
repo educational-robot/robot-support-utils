@@ -12,6 +12,7 @@ def release_camera(cam: cv2.VideoCapture):
     cv2.destroyAllWindows()
 
 def take_picture() -> str | None:
+    print('taking picture...')
     cam = cv2.VideoCapture(0)
     if cam.isOpened():
         # skip few first frame
@@ -29,10 +30,12 @@ def take_picture() -> str | None:
 
             return path
 
+    print('done taking picture...')
     release_camera(cam)
     return None
 
 def take_video() -> str | None:
+    print('taking video...')
     cam = cv2.VideoCapture(0)
     if cam.isOpened():
         width = int(cam.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -71,6 +74,7 @@ def take_video() -> str | None:
 
         return path
 
+    print('done taking video...')
     release_camera(cam)
     return None
 
