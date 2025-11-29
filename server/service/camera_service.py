@@ -143,12 +143,19 @@ def record_video_pi(duration=5):
     except subprocess.TimeoutExpired:
         print("Recording finished")
 
-    print("Video saved:", output_path)
+    output_path_2 = os.path.join(config.IMAGE_FOLDER_PATH, f"{time.time()}.mp4")
+    result_2 = subprocess.run(
+        ["ffmpeg", "-i", output_path, "-c copy", output_path_2],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        timeout=duration
+    )
+    print("Video saved:", output_path_2)
     # nếu muốn gửi Telegram
-    with open(output_path, "rb") as f:
+    with open(output_path_2, "rb") as f:
         telegram_service.send_video_message(f, 'Đây là video từ webcam')
 
-    return output_path
+    return output_path_2
 
 def take_video() -> str | None:
     print('taking video...')
