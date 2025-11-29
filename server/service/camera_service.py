@@ -145,11 +145,14 @@ def record_video_pi(duration=5):
 
     output_path_2 = os.path.join(config.IMAGE_FOLDER_PATH, f"{time.time()}.mp4")
     result_2 = subprocess.run(
-        ["ffmpeg", "-i", output_path, "-c copy", output_path_2],
+        ["ffmpeg", "-y", "-i", output_path, "-c", "copy", output_path_2],
         stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        timeout=duration
+        stderr=subprocess.PIPE
     )
+    if result_2.returncode != 0:
+        print("Conversion failed:", result_2.stderr.decode())
+    else:
+        print("MP4 created:", output_path_2)
     print("Video saved:", output_path_2)
     # nếu muốn gửi Telegram
     with open(output_path_2, "rb") as f:
