@@ -44,6 +44,26 @@ def take_picture() -> str | None:
     release_camera(cam)
     return None
 
+def open_camera_pi():
+    global camera_running, camera_process
+
+    with camera_lock:
+        if camera_running and camera_process is not None:
+            print("⚠️ Camera already running (preview mode)")
+            return False
+
+        print("📷 Starting rpicam-still preview...")
+
+        camera_process = subprocess.Popen(
+            ["rpicam-still", "-f", "-t", "0"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            start_new_session=True
+        )
+
+        camera_running = True
+        return True
+
 def stop_camera():
     global camera_running, camera_process, camera_thread
 
@@ -153,7 +173,8 @@ def listen_redis_command():
         if message['type'] == 'message':
             print(message)
             if message['data'] == 'take_picture':
-                take_picture()
+                # take_picture()
+                take_photo_pi()
             elif message['data'] == 'take_video':
                 take_video()
 
