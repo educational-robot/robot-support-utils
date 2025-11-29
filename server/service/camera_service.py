@@ -19,6 +19,7 @@ def take_picture() -> str | None:
         for i in range(10):
             cam.read()
         ret, frame = cam.read()
+        print('ret is ', ret)
         if ret:
             path = os.path.join(config.IMAGE_FOLDER_PATH, f"{time.time()}.jpg")
             print(path)
