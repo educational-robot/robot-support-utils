@@ -13,7 +13,7 @@ def release_camera(cam: cv2.VideoCapture):
 
 def take_picture() -> str | None:
     print('taking picture...')
-    cam = cv2.VideoCapture(0, cv2.CAP_V4L2)
+    cam = cv2.VideoCapture(1)
     if cam.isOpened():
         # skip few first frame
         for i in range(10):
