@@ -21,6 +21,7 @@ def take_picture() -> str | None:
         ret, frame = cam.read()
         if ret:
             path = os.path.join(config.IMAGE_FOLDER_PATH, f"{time.time()}.jpg")
+            print(path)
             cv2.imwrite(path, frame)
             release_camera(cam)
 
@@ -37,6 +38,7 @@ def take_picture() -> str | None:
 def take_video() -> str | None:
     print('taking video...')
     cam = cv2.VideoCapture(0)
+    print(cam.isOpened())
     if cam.isOpened():
         width = int(cam.get(cv2.CAP_PROP_FRAME_WIDTH))
         height = int(cam.get(cv2.CAP_PROP_FRAME_HEIGHT))
