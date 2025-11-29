@@ -1,4 +1,7 @@
 import os.path
+import queue
+import subprocess
+import threading
 import time
 import cv2
 import redis
@@ -6,6 +9,11 @@ import redis
 from server.core.config import config
 from server.service import telegram_service
 
+camera_running = False
+camera_thread = None  # Track the thread
+camera_process = None
+camera_lock = threading.Lock()
+photo_result_queue = queue.Queue(maxsize=1)
 
 def release_camera(cam: cv2.VideoCapture):
     cam.release()
@@ -13,7 +21,7 @@ def release_camera(cam: cv2.VideoCapture):
 
 def take_picture() -> str | None:
     print('taking picture...')
-    cam = cv2.VideoCapture(1)
+    cam = cv2.VideoCapture(0)
     if cam.isOpened():
         # skip few first frame
         for i in range(10):
@@ -36,7 +44,59 @@ def take_picture() -> str | None:
     release_camera(cam)
     return None
 
+def stop_camera():
+    global camera_running, camera_process, camera_thread
 
+    with camera_lock:
+        if not camera_running:
+            return
+
+        print("Stopping camera...")
+        camera_running = False
+
+        if camera_process is not None:
+            try:
+                camera_process.terminate()
+                try:
+                    camera_process.wait(timeout=2)
+                except subprocess.TimeoutExpired:
+                    print("Process didn't terminate gracefully, killing...")
+                    camera_process.kill()
+                    camera_process.wait()
+            except Exception as e:
+                print("Error terminating camera process:", e)
+            finally:
+                camera_process = None
+
+    # Wait for thread to finish outside the lock
+    if camera_thread is not None:
+        camera_thread.join(timeout=3)
+        camera_thread = None
+
+def take_photo_pi():
+    global camera_running
+
+    # Stop preview if running
+    if camera_running:
+        stop_camera()
+
+    output_path = os.path.join(config.IMAGE_FOLDER_PATH, f"{time.time()}.jpg")
+    print("Capturing photo using rpicam-still...")
+
+    result = subprocess.run(
+        ["rpicam-still", "-f", "-o", output_path, "-t", "1"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        timeout=10
+    )
+
+    if result.returncode != 0:
+        print("Capture failed:", result.stderr.decode())
+        return None
+
+    print("Photo saved:", output_path)
+
+    return output_path
 
 def take_video() -> str | None:
     print('taking video...')
