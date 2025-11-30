@@ -104,7 +104,7 @@ def take_photo_pi():
     print("Capturing photo using rpicam-still...")
 
     result = subprocess.run(
-        ["rpicam-still", "-o", output_path, "-t", "1"],
+        ["rpicam-still", "--nopreview", "-o", output_path, "-t", "1"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         timeout=10
@@ -132,7 +132,7 @@ def record_video_pi(duration=5):
 
     try:
         result = subprocess.run(
-            ["rpicam-vid", "-o", output_path, "-t", str(duration*1000)],
+            ["rpicam-vid", "nopreview", "-o", output_path, "-t", str(duration*1000)],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             timeout=duration
